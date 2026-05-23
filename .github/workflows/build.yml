@@ -17,7 +17,14 @@ jobs:
         distribution: 'temurin'
 
     - name: Unzip project
-      run: unzip "shieldpro (1).zip" -d project
+      run: |
+        unzip "shieldpro (2).zip" -d project_temp
+        ls project_temp/
+        if [ -d "project_temp/shieldfix" ]; then
+          mv project_temp/shieldfix project
+        else
+          mv project_temp/* project 2>/dev/null || mv project_temp project
+        fi
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
