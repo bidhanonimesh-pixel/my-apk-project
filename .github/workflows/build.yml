@@ -22,12 +22,12 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
       with:
-        gradle-version: '8.13'
+        gradle-version: '9.3.1'
 
     - name: Generate gradlew and keystore
       run: |
         cd project
-        gradle wrapper --gradle-version 8.13
+        gradle wrapper --gradle-version 9.3.1
         chmod +x gradlew
         keytool -genkey -v -keystore debug.keystore \
           -alias androiddebugkey -keyalg RSA -keysize 2048 \
