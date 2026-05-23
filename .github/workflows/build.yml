@@ -1,4 +1,4 @@
-name: Build APK
+name: Build ShieldPro APK
 
 on:
   push:
@@ -18,13 +18,8 @@ jobs:
 
     - name: Unzip project
       run: |
-        unzip "shieldpro (2).zip" -d project_temp
-        ls project_temp/
-        if [ -d "project_temp/shieldfix" ]; then
-          mv project_temp/shieldfix project
-        else
-          mv project_temp/* project 2>/dev/null || mv project_temp project
-        fi
+        unzip "shieldpro (3).zip" -d project
+        ls project/
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
@@ -40,13 +35,15 @@ jobs:
           -alias androiddebugkey -keyalg RSA -keysize 2048 \
           -validity 10000 -storepass android -keypass android \
           -dname "CN=Android Debug,O=Android,C=US"
+        echo "GEMINI_API_KEY=PLACEHOLDER_KEY" > .env
 
     - name: Install Android SDK
       run: |
         ANDROID_HOME=/usr/local/lib/android/sdk
         echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
-          "platforms;android-36" "build-tools;36.0.0"
+          "platforms;android-36" \
+          "build-tools;36.0.0"
 
     - name: Build APK
       run: cd project && ./gradlew assembleDebug
@@ -54,5 +51,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug
+        name: ShieldPro-Debug
         path: '**/*.apk'
