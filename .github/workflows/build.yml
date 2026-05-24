@@ -25,11 +25,9 @@ jobs:
           ZIP=$(find . -name "*.zip" | head -1)
           echo "Found zip: $ZIP"
           unzip -o "$ZIP" -d extracted/
-          # Move extracted contents to root
-          INNER=$(find extracted -maxdepth 2 -name "gradlew" | head -1 | xargs dirname)
+          INNER=$(find extracted -maxdepth 3 -name "build.gradle.kts" | head -1 | xargs dirname)
           echo "Project root: $INNER"
           cp -r "$INNER"/. ./
-          chmod +x gradlew
 
       - name: Download gradle-wrapper.jar
         run: |
@@ -37,6 +35,20 @@ jobs:
           curl -fsSL \
             "https://github.com/gradle/gradle/raw/v8.7.0/gradle/wrapper/gradle-wrapper.jar" \
             -o gradle/wrapper/gradle-wrapper.jar
+
+      - name: Fix gradlew and make executable
+        run: |
+          cat > gradlew << 'GRADLEW'
+          #!/bin/sh
+          APP_HOME=$(dirname "$(readlink -f "$0")")
+          CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+          exec java \
+            -Xmx512m \
+            -Dorg.gradle.appname=gradlew \
+            -classpath "$CLASSPATH" \
+            org.gradle.wrapper.GradleWrapperMain "$@"
+          GRADLEW
+          chmod +x gradlew
 
       - name: Decode keystore
         run: |
