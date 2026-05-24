@@ -24,16 +24,16 @@ jobs:
       - name: Unzip project
         run: unzip shieldpro_v5_github_fixed.zip -d project
 
-      - name: Permissions
-        run: chmod +x project/gradlew
+      - name: Permission
+        run: chmod +x project/shieldpro_v5/gradlew
 
       - name: Build APK
         run: |
-          cd project
-          ./gradlew assembleDebug
+          cd project/shieldpro_v5
+          gradle assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: project/app/build/outputs/apk/debug/*.apk
+          name: ShieldPro-APK
+          path: project/shieldpro_v5/app/build/outputs/apk/debug/*.apk
