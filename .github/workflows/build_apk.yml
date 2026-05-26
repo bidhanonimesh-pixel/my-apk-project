@@ -1,0 +1,68 @@
+name: Build ShieldPro APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Find and extract zip
+        run: |
+          ZIP_FILE=$(find . -maxdepth 1 -name "*.zip" | head -1)
+          echo "Found zip: $ZIP_FILE"
+          unzip "$ZIP_FILE"
+          PROJECT_DIR=$(unzip -Z1 "$ZIP_FILE" | head -1 | cut -d/ -f1)
+          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+          echo "Project folder: $PROJECT_DIR"
+
+      - name: Setup Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Create keystore and env files
+        run: |
+          cd "$PROJECT_DIR"
+          echo "STORE_PASSWORD=android" > .env
+          echo "KEY_PASSWORD=android" >> .env
+          cp .env .env.example
+          keytool -genkey -v \
+            -keystore debug.keystore \
+            -alias androiddebugkey \
+            -keyalg RSA -keysize 2048 \
+            -validity 10000 \
+            -storepass android \
+            -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Build Debug APK
+        run: |
+          cd "$PROJECT_DIR"
+          gradle assembleDebug --no-daemon --no-configuration-cache --stacktrace
+        env:
+          STORE_PASSWORD: android
+          KEY_PASSWORD: android
+
+      - name: Copy APK to root
+        run: |
+          cp "$PROJECT_DIR/app/build/outputs/apk/debug/app-debug.apk" ./ShieldPro-debug.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShieldPro-APK
+          path: ./ShieldPro-debug.apk
+          retention-days: 30
