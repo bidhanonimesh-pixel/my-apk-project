@@ -20,13 +20,27 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle
+
+      - name: Install Gradle 8.11.1
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -O gradle.zip
+          unzip -q gradle.zip -d /opt/gradle
+          echo "/opt/gradle/gradle-8.11.1/bin" >> $GITHUB_PATH
+
+      - name: Generate Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.11.1
+          chmod +x gradlew
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Grant Permission
-        run: chmod +x gradlew
+      - name: Accept Android Licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Install Build Tools & Platform
+        run: |
+          sdkmanager "platforms;android-36" "build-tools;35.0.0"
 
       - name: Build APK
         run: ./gradlew assembleDebug --stacktrace
