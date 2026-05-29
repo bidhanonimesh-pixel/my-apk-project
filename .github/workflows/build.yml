@@ -17,7 +17,7 @@ jobs:
 
       - name: Extract ZIP
         run: |
-          unzip JanuAI.zip
+          unzip *.zip
           ls -la
 
       - name: Setup JDK 17
